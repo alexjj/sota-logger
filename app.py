@@ -23,13 +23,13 @@ def generate_markdown(contacts, output_file='contacts.md'):
             band = contact.get('BAND', 'Unknown')
             qth = contact.get('QTH', 'Unknown')
             comment = contact.get('COMMENT', 'Unknown')
-            grid = contact.get('GRIDSQUARE', 'Unknown')
+            grid = contact.get('GRIDSQUARE', None)
             my_grid = contact.get('MY_GRIDSQUARE', 'Unknown')
 
-            if grid != 'Unknown':
+            if grid is not None:
                 lat, lon = grid_to_latlon(grid)
                 my_lat, my_lon = grid_to_latlon(my_grid)
-                distance = str(round(geodesic((my_lat, my_lon), (lat, lon)).km))
+                distance = round(geodesic((my_lat, my_lon), (lat, lon)).km)
             else:
                 distance = 'N/A'
 
@@ -37,18 +37,21 @@ def generate_markdown(contacts, output_file='contacts.md'):
 
 def generate_map(contacts, output_file='contacts_map.html'):
     """ Generates an interactive map of the contacts."""
-    m = folium.Map(location=[0, 0], zoom_start=2)
+    m = folium.Map(location=[50, 5], zoom_start=5)
 
     for contact in contacts:
         callsign = contact.get('CALL', 'Unknown')
         grid = contact.get('GRIDSQUARE', None)
+        my_grid = contact.get('MY_GRIDSQUARE', 'Unknown')
 
         if grid is not None:
             lat, lon = grid_to_latlon(grid)
+            my_lat, my_lon = grid_to_latlon(my_grid)
+            distance = round(geodesic((my_lat, my_lon), (lat, lon)).km)
 
             folium.Marker(
                 location=[lat, lon],
-                popup=f"Callsign: {callsign}\nGrid: {grid}",
+                popup=f"Callsign: {callsign}\nGrid: {grid}\nDistance (km): {distance}",
                 icon=folium.Icon(color='blue', icon='info-sign')
             ).add_to(m)
 
